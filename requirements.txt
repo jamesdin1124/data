@@ -1,0 +1,10 @@
+pandas
+numpy
+scipy
+plotly
+base64
+io
+reportlab
+os
+matplotlib
+datetime
