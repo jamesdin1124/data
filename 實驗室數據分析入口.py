@@ -7,8 +7,6 @@ from plotly.subplots import make_subplots
 import plotly.io as pio
 import base64
 import io
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
 from PIL import Image
 import os
 import matplotlib.pyplot as plt
@@ -154,26 +152,6 @@ def create_boxplot_trend(df, group_column, selected_column, age_column, interval
     )
     
     return fig
-
-def create_pdf_with_images(image_files):
-    pdf_buffer = io.BytesIO()
-    c = canvas.Canvas(pdf_buffer, pagesize=letter)
-    width, height = letter
-
-    for img_file in image_files:
-        img = Image.open(img_file)
-        img_width, img_height = img.size
-        aspect = img_height / float(img_width)
-        
-        # 設置圖像大小，使其適合頁面
-        display_width = width * 0.9
-        display_height = display_width * aspect
-        
-        c.drawImage(img_file, width * 0.05, height - display_height - 30, width=display_width, height=display_height)
-        c.showPage()
-
-    c.save()
-    return pdf_buffer
 
 # 連續變量分析功能
 def continuous_variable_analysis():
