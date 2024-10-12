@@ -6,4 +6,7 @@ plotly
 pillow
 matplotlib
 scikit-learn
-logisticR
+datetime
+seaborn
+statsmodels.api
+logisticR.py
