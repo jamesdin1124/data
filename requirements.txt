@@ -8,5 +8,5 @@ matplotlib
 scikit-learn
 datetime
 seaborn
-statsmodels.api
+statsmodels
 logisticR.py
