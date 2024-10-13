@@ -9,4 +9,3 @@ scikit-learn
 datetime
 seaborn
 statsmodels
-logisticR.py
