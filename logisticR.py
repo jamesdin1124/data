@@ -9,50 +9,55 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 
-def run_logistic_regression_analysis():
-    st.title('Logistic 回归分析工具 (单变量 & 多变量)')
+def run_logistic_regression_analysis(df):
+    st.title('Logistic 回歸分析工具 (單變量 & 多變量)')
 
-    uploaded_file = st.file_uploader("选择 CSV 文件", type="csv")
-    if uploaded_file is not None:
-        data = pd.read_csv(uploaded_file)
-        st.write("数据预览：")
-        st.write(data.head())
+    st.write("數據預覽：")
+    st.write(df.head())
 
-        target_column = st.selectbox("选择目标变量", data.columns)
-        feature_columns = st.multiselect("选择自变量", [col for col in data.columns if col != target_column])
+    target_column = st.selectbox("選擇目標變量", df.columns)
+    feature_columns = st.multiselect("選擇自變量", [col for col in df.columns if col != target_column])
 
-        if feature_columns:
-            st.write("选定变量的描述性统计：")
-            st.write(data[feature_columns + [target_column]].describe())
+    if feature_columns:
+        st.write("選定變量的描述性統計：")
+        st.write(df[feature_columns + [target_column]].describe())
 
-            st.write("相关性矩阵：")
-            corr_matrix = data[feature_columns + [target_column]].corr()
-            fig, ax = plt.subplots(figsize=(10, 8))
-            sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', ax=ax)
-            st.pyplot(fig)
+        st.write("相關性矩陣：")
+        corr_matrix = df[feature_columns + [target_column]].corr()
+        fig, ax = plt.subplots(figsize=(10, 8))
+        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', ax=ax)
+        st.pyplot(fig)
 
-            X = data[feature_columns]
-            y = data[target_column]
+        X = df[feature_columns]
+        y = df[target_column]
 
-            imputation_method = st.selectbox(
-                "选择缺失值处理方法",
-                ["删除缺失值", "均值填充", "中位数填充", "KNN填充", "多重插补", "缺失值指示器"]
-            )
+        # 檢查目標變量是否為二元變量
+        unique_values = y.unique()
+        if len(unique_values) != 2:
+            st.error(f"目標變量 '{target_column}' 不是二元變量。請選擇一個只有兩個唯一值的變量，或者設置一個閾值來將其轉換為二元變量。")
+            threshold = st.number_input(f"請輸入 {target_column} 的閾值來創建二元變量", value=y.mean())
+            y = (y > threshold).astype(int)
+            st.write(f"已將 {target_column} 轉換為二元變量。大於 {threshold} 的值設為 1，其他設為 0。")
 
-            if st.button("运行分析"):
-                X_imputed = handle_missing_values(X, imputation_method)
-                run_logistic_regression(X_imputed, y)
+        imputation_method = st.selectbox(
+            "選擇缺失值處理方法",
+            ["刪除缺失值", "均值填充", "中位數填充", "KNN填充", "多重插補", "缺失值指示器"]
+        )
+
+        if st.button("運行分析"):
+            X_imputed = handle_missing_values(X, imputation_method)
+            run_logistic_regression(X_imputed, y)
 
 def handle_missing_values(X, method):
-    if method == "删除缺失值":
+    if method == "刪除缺失值":
         return X.dropna()
     elif method == "均值填充":
         imputer = SimpleImputer(strategy='mean')
-    elif method == "中位数填充":
+    elif method == "中位數填充":
         imputer = SimpleImputer(strategy='median')
     elif method == "KNN填充":
         imputer = KNNImputer(n_neighbors=2)
-    elif method == "多重插补":
+    elif method == "多重插補":
         imputer = IterativeImputer(random_state=0)
     elif method == "缺失值指示器":
         for col in X.columns:
@@ -63,7 +68,7 @@ def handle_missing_values(X, method):
     return X_imputed
 
 def run_logistic_regression(X, y):
-    st.write("## 单变量 Logistic 回归分析")
+    st.write("## 單變量 Logistic 回歸分析")
     univariate_results = []
     
     for column in X.columns:
@@ -89,7 +94,7 @@ def run_logistic_regression(X, y):
     univariate_results_sorted = univariate_results.sort_values('p-value')
     st.write(univariate_results_sorted)
     
-    st.write("## 多变量 Logistic 回归分析")
+    st.write("## 多變量 Logistic 回歸分析")
     X_multivariate = sm.add_constant(X)
     model = sm.Logit(y, X_multivariate)
     results = model.fit()
@@ -106,22 +111,22 @@ def run_logistic_regression(X, y):
     })
     
     odds_ratios_sorted = odds_ratios.sort_values('p-value')
-    st.write("变量统计信息：")
+    st.write("變量統計信息：")
     st.write(odds_ratios_sorted)
     
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.barplot(x=odds_ratios_sorted['p-value'], y=odds_ratios_sorted.index, ax=ax)
-    plt.title("变量 p 值 (多变量分析)")
+    plt.title("變量 p 值 (多變量分析)")
     plt.tight_layout()
     st.pyplot(fig)
     
     significant_predictors = odds_ratios_sorted[odds_ratios_sorted['p-value'] < 0.05]
-    st.write("显著的预测因子 (p < 0.05)：")
+    st.write("顯著的預測因子 (p < 0.05)：")
     st.write(significant_predictors)
     
-    st.write("## 单变量 vs 多变量分析比较")
+    st.write("## 單變量 vs 多變量分析比較")
     comparison = pd.merge(univariate_results, odds_ratios_sorted, left_on='Variable', right_index=True, suffixes=('_univariate', '_multivariate'))
     st.write(comparison)
 
 if __name__ == "__main__":
-    run_logistic_regression_analysis()
+    run_logistic_regression_analysis(pd.DataFrame())
