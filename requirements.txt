@@ -9,3 +9,4 @@ scikit-learn
 datetime
 seaborn
 statsmodels
+lifelines

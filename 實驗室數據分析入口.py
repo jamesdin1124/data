@@ -12,6 +12,7 @@ import os
 import matplotlib.pyplot as plt
 from datetime import datetime
 from logisticR import run_logistic_regression_analysis
+from survival_analysis import run_survival_analysis
 
 # 載入數據
 def load_data(uploaded_file):
@@ -169,7 +170,7 @@ def continuous_variable_analysis(df):
         group_method = st.selectbox("選擇分組方法", ["二分法", "自定義閾值"])
         if group_method == "二分法":
             median_value = df[group_column].median()
-            st.write(f"{group_column} 的中位數為: {median_value}")
+            st.write(f"{group_column} 的中位��為: {median_value}")
             df['group'] = (df[group_column] > median_value).astype(int)
             st.write("已將數據分為兩組：0（小於等於中位數）和 1（大於中位數）")
         else:
@@ -263,7 +264,7 @@ def lab_test_trend(df):
             fig.update_layout(title=f'{test} 趨勢圖', xaxis_title=x_axis, yaxis_title='檢查結果')
             st.plotly_chart(fig)
     else:
-        st.warning('請選擇至少一個病歷號')
+        st.warning('選擇至少一個病歷號')
 
 def calculate_age(birth_date, test_date):
     birth_date = pd.to_datetime(birth_date)
@@ -492,7 +493,7 @@ def main():
                     is_numeric_column = pd.api.types.is_numeric_dtype(df[filter_column])
                     
                     if is_numeric_column:
-                        filter_condition = st.selectbox("選擇篩選條件", ["等於", "大於", "小於"])
+                        filter_condition = st.selectbox("選擇篩���條件", ["等於", "大於", "小於"])
                         filter_value = st.number_input(f"輸入 {filter_column} 的篩選值", value=float(df[filter_column].mean()))
                     else:
                         filter_condition = "等於"
@@ -517,6 +518,7 @@ def main():
         "比較兩組連續變量統計差異", 
         "卡方檢驗和費雪精確檢驗分析",
         "Logistic 回歸分析",
+        "生存分析"  # 新增的選項
     ])
 
     # 根據選擇的分析類型執行相應的函數
@@ -531,6 +533,8 @@ def main():
             run_logistic_regression_analysis(st.session_state['df'])
         elif analysis_type == "列資料查詢":
             column_data_query(st.session_state['df'])
+        elif analysis_type == "生存分析":
+            run_survival_analysis(st.session_state['df'])
     else:
         st.info("請在側邊欄上傳一個CSV文件來開始分析。")
 
